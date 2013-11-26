@@ -35,13 +35,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         Log.i("JOCASTA_DB_HELPER", "onUpgrade");
         
-        upgradeDatabase(database);
+        if (newVersion > oldVersion) {
+            upgradeDatabase(database);
+        }
     }
     
     private <T extends Model> void createDatabase(SQLiteDatabase database) {
         List<T> models = getModels(this.context);
         
         for (T model : models) {
+            dropTable(model, database);
             createTable(model, database);
         }
     }
@@ -50,12 +53,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<T> models = getModels(this.context);
         
         for (T model : models) {
+            dropTable(model, database);
             createTable(model, database);
         }
     }
     
+    private <T extends Model> void dropTable(T model, SQLiteDatabase database) {
+        String sql = "DROP TABLE IF EXISTS " + model.getTableName();
+        
+        try {
+            Log.i("JOCASTA_DB_HELPER:dropTable", sql);
+            database.execSQL(sql);
+        } catch (Exception e) {
+            Log.i("JOCASTA_DB_HELPER_ERROR:dropTable", e.getMessage());
+        }
+    }
+    
     private <T extends Model> void createTable(T model, SQLiteDatabase database) {
-        Log.i("JOCASTA_DB_HELPER:createTable", model + "");
         List<Field> fields = model.getTableFields();
         
         StringBuilder builder = new StringBuilder("CREATE TABLE ").append(model.getTableName()).append(" ( id INTEGER PRIMARY KEY AUTOINCREMENT ");

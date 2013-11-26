@@ -4,6 +4,7 @@ import com.jocasta.callbacks.AsyncFailCallback;
 import com.jocasta.callbacks.AsyncSuccessCallback;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class RestAsyncTask extends AsyncTask<String, Void, String> {
     private AsyncSuccessCallback successCallback;
@@ -18,9 +19,11 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... urls) {
+        Log.i("doInBackground", urls[0]);
         try {
             return loadFromNetwork(urls[0]);
         } catch (Exception e) {
+            Log.i("doInBackground", e.getMessage());
             if (this.failCallback != null) {
                 this.failCallback.run(e);
             }
@@ -33,6 +36,8 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         
+        Log.i("RestAsyncTask.onPostExecute", result);
+        
         if (!result.equals(null)) {
             if (this.successCallback != null) {
                 this.successCallback.run(result);
@@ -41,6 +46,7 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
     }
     
     private String loadFromNetwork(String url) throws Exception {
+        this.client.setURL(url);
         this.client.execute(this.method);
         
         return client.getResponse();

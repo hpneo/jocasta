@@ -54,7 +54,9 @@ public class RestClient {
     }
 
     public void addAllParams(ArrayList<NameValuePair> params) {
-        params.addAll(params);
+        if (params != null) {
+            params.addAll(params);
+        }
     }
 
     public void addHeader(String name, String value) {

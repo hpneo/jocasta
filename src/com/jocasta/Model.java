@@ -1,6 +1,7 @@
 package com.jocasta;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -27,13 +28,39 @@ import android.util.Log;
 public class Model {
     
     protected Long id = null;
+    @Ignore
+    public static String BASE_URL = null;
+    @Ignore
     protected static String resourceURL = null;
+    @Ignore
     protected static HashMap<String, String> URLS = new HashMap<String, String>();
     
     public Model(Context context) {
     }
 
     public Model() {
+    }
+    
+    public static String getResourceUrl(String action) {
+        return BASE_URL + resourceURL + URLS.get(action);
+    }
+
+    public static <T extends Model> T find(Class<T> type, int id) {
+        List<T> results = where(type, new QueryCondition<String, Object>("id", id)).toList();
+        
+        return results.get(0);
+    }
+    
+    public static <T extends Model> List<T> all(Class<T> type) {
+        List<T> results = where(type, null).toList();
+        
+        return results;
+    }
+    
+    public static <T extends Model> boolean isEmpty(Class<T> type) {
+        List<T> results = where(type, null).toList();
+        
+        return results.isEmpty();
     }
     
     public void save() {
@@ -152,9 +179,33 @@ public class Model {
     }
 
     public static <T extends Model> void fetch(Class<T> type, AsyncSuccessCallback successCallback, AsyncFailCallback failCallback) {
-        if (resourceURL != null && !resourceURL.equals("")) {
-            get(resourceURL, null, successCallback, failCallback);
+        String url = null;
+        
+        try {
+            url = type.getMethod("getResourceUrl", String.class).invoke(type, "index").toString();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        
+        if (url != null && !url.equals(null)) {
+            get(url, null, successCallback, failCallback);
+        }
+    }
+    
+    public static <T extends Model> void clear(Class<T> type) {
+        SQLiteDatabase db = getApplication().getDatabase().getDB();
+        
+        db.delete(getTableName(type), null, null);
     }
 
     public void sync(AsyncSuccessCallback successCallback, AsyncFailCallback failCallback) {
@@ -192,24 +243,6 @@ public class Model {
         SQLiteDatabase db = getApplication().getDatabase().getDB();
 
         return new Query<T>(type, db, getTableName(type), conditions);
-    }
-
-    public static <T extends Model> T find(Class<T> type, int id) {
-        List<T> results = where(type, new QueryCondition<String, Object>("id", id)).toList();
-        
-        return results.get(0);
-    }
-    
-    public static <T extends Model> List<T> all(Class<T> type) {
-        List<T> results = where(type, null).toList();
-        
-        return results;
-    }
-    
-    public static <T extends Model> boolean isEmpty(Class<T> type) {
-        List<T> results = where(type, null).toList();
-        
-        return results.isEmpty();
     }
     
     @SuppressWarnings("rawtypes")
@@ -295,7 +328,7 @@ public class Model {
         Collections.addAll(fields, type.getDeclaredFields());
         
         for (Field field : type.getDeclaredFields()) {
-            if (!field.isAnnotationPresent(Ignore.class)) {
+            if (!field.isAnnotationPresent(Ignore.class) && !fields.contains(field)) {
                 fields.add(field);
             }
         }
