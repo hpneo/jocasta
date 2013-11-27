@@ -27,7 +27,7 @@ import android.util.Log;
 
 public class Model {
     
-    protected Long id = null;
+    public Long id = null;
     @Ignore
     public static String BASE_URL = null;
     @Ignore
@@ -39,6 +39,10 @@ public class Model {
     }
 
     public Model() {
+    }
+    
+    public static String getBaseUrl() {
+        return BASE_URL;
     }
     
     public static String getResourceUrl(String action) {

@@ -159,4 +159,8 @@ public class Inflector {
                 .toLowerCase();
         return underscoredWord;
     }
+    
+    public static String titleize(final String lowercasedWord) {
+        return lowercasedWord.substring(0, 1).toUpperCase() + lowercasedWord.substring(1);
+    }
 }

@@ -19,11 +19,12 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... urls) {
-        Log.i("doInBackground", urls[0]);
+        Log.i("RestAsyncTask.doInBackground", urls[0]);
         try {
             return loadFromNetwork(urls[0]);
         } catch (Exception e) {
-            Log.i("doInBackground", e.getMessage());
+            Log.i("doInBackground.Exception", e.getMessage() + "");
+            e.printStackTrace();
             if (this.failCallback != null) {
                 this.failCallback.run(e);
             }
@@ -36,7 +37,7 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         
-        Log.i("RestAsyncTask.onPostExecute", result);
+        Log.i("RestAsyncTask.onPostExecute", result + "");
         
         if (!result.equals(null)) {
             if (this.successCallback != null) {
@@ -48,6 +49,9 @@ public class RestAsyncTask extends AsyncTask<String, Void, String> {
     private String loadFromNetwork(String url) throws Exception {
         this.client.setURL(url);
         this.client.execute(this.method);
+
+        Log.i("RestAsyncTask", this.client.getURL() + "");
+        Log.i("RestAsyncTask.client.getResponse", this.client.getResponse() + "");
         
         return client.getResponse();
     }

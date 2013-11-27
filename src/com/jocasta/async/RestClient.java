@@ -27,9 +27,9 @@ public class RestClient {
         GET, POST, PUT
     }
 
-    private ArrayList<NameValuePair> params;
-    private ArrayList<NameValuePair> headers;
-    private ArrayList<String> errors;
+    private ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+    private ArrayList<NameValuePair> headers = new ArrayList<NameValuePair>();
+    private ArrayList<String> errors = new ArrayList<String>();
 
     private String url;
 
@@ -53,9 +53,9 @@ public class RestClient {
         params.add(new BasicNameValuePair(name, value));
     }
 
-    public void addAllParams(ArrayList<NameValuePair> params) {
-        if (params != null) {
-            params.addAll(params);
+    public void addAllParams(ArrayList<NameValuePair> newParams) {
+        if (newParams != null) {
+            this.params.addAll(newParams);
         }
     }
 
@@ -185,13 +185,21 @@ public class RestClient {
     }
 
     public String getURL() {
-        Iterator<NameValuePair> iterator = this.params.iterator();
-
         String stringParams = "";
-
-        while (iterator.hasNext()) {
-            NameValuePair pair = iterator.next();
-            stringParams += pair.getName() + "=" + pair.getValue() + "&";
+        
+        if (this.params != null) {
+            NameValuePair[] paramsArray = this.params.toArray(new NameValuePair[0]);
+            
+            for (int i = 0; i < paramsArray.length; i++) {
+                NameValuePair pair = paramsArray[i];
+                
+                if (i < paramsArray.length - 1) {
+                    stringParams += pair.getName() + "=" + pair.getValue() + "&";
+                }
+                else {
+                    stringParams += pair.getName() + "=" + pair.getValue();
+                }
+            }
         }
 
         return this.url + "?" + stringParams;
